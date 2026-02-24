@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArtiFact: Technical Dataset Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f4f2f0;
+    --accent: #7c3aed;
+    --accent2: #0369a1;
+    --accent3: #059669;
+    --muted: #78716c;
+    --rule: #d4cfc8;
+    --highlight: #ede9fe;
+    --code-bg: #1a1a1a;
+    --code-fg: #e8e0d0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 3rem 4rem;
+    position: relative;
+    background: #0f0a1e;
+    color: var(--paper);
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(124,58,237,0.06) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(124,58,237,0.06) 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* purple radial glow */
+  .cover::after {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #particles-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .cover-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.35);
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 2px;
+    align-self: start;
+    width: fit-content;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: rgba(212,207,200,0.55);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    border-right: 1px solid rgba(245,242,236,0.4);
+    padding-right: 4px;
+    width: fit-content;
+  }
+
+  .cover-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: #f4f2f0;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .cover-title::after {
+    content: '|';
+    color: var(--accent);
+    animation: blink 1.1s step-end infinite;
+    margin-left: 4px;
+    font-weight: 300;
+  }
+
+  .cover-title .accent { color: var(--accent); }
+
+  .cover-subtitle {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-weight: 400;
+    color: rgba(244,242,240,0.5);
+    margin-top: 1.5rem;
+    max-width: 620px;
+    line-height: 1.45;
+  }
+
+  .cover-stats-row {
+    display: flex;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cover-stat { display: flex; flex-direction: column; gap: 4px; }
+
+  .cover-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #f4f2f0;
+    line-height: 1;
+  }
+
+  .cover-stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(212,207,200,0.45);
+  }
+
+  .cover-author-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding: 1rem 1.4rem;
+    border: 1px solid rgba(124,58,237,0.2);
+    background: rgba(124,58,237,0.06);
+    width: fit-content;
+    max-width: 440px;
+  }
+
+  .cover-author-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: white; flex-shrink: 0;
+  }
+
+  .cover-author-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700; color: #f4f2f0;
+  }
+
+  .cover-author-links { display: flex; gap: 1rem; margin-top: 4px; }
+
+  .cover-author-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: rgba(244,242,240,0.4);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+    transition: color 0.2s;
+  }
+  .cover-author-link:hover { color: var(--accent); }
+
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid rgba(124,58,237,0.15);
+    padding-top: 2rem;
+    position: relative; z-index: 1;
+  }
+
+  .cover-authors {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(244,242,240,0.3);
+    line-height: 1.8;
+  }
+
+  .cover-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(244,242,240,0.3);
+    text-align: right; line-height: 1.8;
+  }
+
+  /* ── BODY ── */
+  .doc-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 3rem;
+  }
+
+  p { margin-bottom: 1.2rem; color: #2a2520; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 1rem;
+    position: relative; overflow: hidden;
+  }
+
+  .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px; width: 0;
+    background: var(--accent);
+    transition: width 0.8s cubic-bezier(.22,.8,.46,1);
+  }
+  .section-header.visible::after { width: 100%; }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: 0.1em; flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 700;
+    letter-spacing: -0.02em; flex: 1;
+  }
+
+  /* ── OVERVIEW CARDS ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+
+  .overview-card {
+    background: var(--paper);
+    padding: 2rem 1.5rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.2s;
+  }
+  .overview-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(124,58,237,0.1);
+    background: white;
+  }
+
+  .overview-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+  .overview-card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.9rem; font-weight: 800;
+    color: var(--accent); line-height: 1;
+  }
+
+  .overview-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .overview-card-desc {
+    font-size: 13px; color: var(--muted);
+    margin-top: 0.4rem; line-height: 1.5;
+  }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight-box {
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem;
+    background: rgba(124,58,237,0.05);
+    margin: 2rem 0;
+    position: relative; overflow: hidden;
+  }
+  .highlight-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--accent);
+    transition: height 0.7s ease;
+  }
+  .highlight-box.visible::before { height: 100%; }
+
+  .highlight-box-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 0.5rem; color: var(--accent);
+  }
+  .highlight-box p { margin-bottom: 0; font-size: 14px; }
+
+  /* ── SPLIT VISUAL ── */
+  .split-visual {
+    margin: 2.5rem 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .split-card {
+    border: 1.5px solid var(--ink);
+    padding: 2rem;
+    position: relative; overflow: hidden;
+  }
+  .split-card::after {
+    content: attr(data-label);
+    position: absolute;
+    top: -1px; left: -1px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    background: var(--ink); color: var(--paper);
+  }
+
+  .split-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 1rem; margin-top: 1.5rem;
+  }
+
+  .split-bar-container { margin-bottom: 0.8rem; }
+
+  .split-bar-label {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted); margin-bottom: 4px;
+  }
+
+  .split-bar-track {
+    height: 8px; background: var(--rule);
+    border-radius: 1px; overflow: hidden;
+  }
+
+  .split-bar-fill {
+    height: 100%; border-radius: 1px;
+    width: 0 !important;
+    transition: width 1.2s cubic-bezier(.22,.8,.46,1);
+  }
+  .split-bar-fill.animated { width: var(--target-w) !important; }
+
+  .fill-real  { background: var(--accent3); }
+  .fill-fake  { background: var(--accent);  }
+  .fill-total { background: var(--accent2); }
+
+  /* ── GENERATOR GRID ── */
+  .gen-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+
+  .gen-cell {
+    background: var(--paper);
+    padding: 1.1rem 1rem;
+    text-align: center;
+    transition: transform 0.2s ease, background 0.2s;
+    cursor: default;
+  }
+  .gen-cell:hover {
+    transform: scale(1.05);
+    background: var(--highlight);
+    z-index: 2; position: relative;
+  }
+
+  .gen-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .gen-type.gan     { color: var(--accent);  }
+  .gen-type.diff    { color: var(--accent2); }
+  .gen-type.other   { color: var(--accent3); }
+
+  .gen-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* ── PIPELINE ── */
+  .arch-diagram {
+    background: var(--highlight);
+    border: 1px solid rgba(124,58,237,0.2);
+    padding: 2.5rem;
+    margin: 2.5rem 0;
+  }
+
+  .arch-diagram-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .arch-flow {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+  }
+
+  .arch-node {
+    flex: 1; min-width: 110px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 1rem 1.2rem;
+    text-align: center;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+  }
+  .arch-node:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.15);
+  }
+
+  .arch-node-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700; margin-bottom: 4px;
+  }
+  .arch-node-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted);
+  }
+
+  .arch-arrow { width: 36px; text-align: center; font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+
+  .arch-node.hl-real  { border-color: var(--accent3); background: rgba(5,150,105,0.05); }
+  .arch-node.hl-fake  { border-color: var(--accent);  background: rgba(124,58,237,0.05); }
+  .arch-node.hl-model { border-color: var(--accent2); background: rgba(3,105,161,0.05); }
+
+  /* ── PIPELINE STEPS ── */
+  .pipeline { margin: 2.5rem 0; }
+
+  .pipeline-step {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .pipeline-step-num {
+    width: 48px; height: 48px;
+    border: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem; font-weight: 800; flex-shrink: 0;
+  }
+
+  .pipeline-step-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 15px; margin-bottom: 4px;
+  }
+  .pipeline-step-desc { font-size: 13.5px; color: var(--muted); }
+
+  /* ── CNN / MODEL LAYERS ── */
+  .cnn-layers {
+    display: flex; flex-direction: column;
+    margin: 2.5rem 0;
+    border: 1px solid var(--rule);
+  }
+
+  .cnn-layer {
+    display: grid;
+    grid-template-columns: 200px 1fr 130px;
+    align-items: center;
+    border-bottom: 1px solid var(--rule);
+    transition: background 0.15s; cursor: default;
+  }
+  .cnn-layer:last-child { border-bottom: none; }
+  .cnn-layer:hover .cnn-layer-name   { background: var(--accent2); color: white; }
+  .cnn-layer:hover .cnn-layer-params { color: var(--accent); }
+
+  .cnn-layer-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+    padding: 1rem 1.5rem;
+    border-right: 1px solid var(--rule);
+    background: var(--highlight); color: var(--ink);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .cnn-layer-desc {
+    font-size: 13px; color: var(--muted);
+    padding: 1rem 1.5rem;
+  }
+
+  .cnn-layer-params {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--accent2);
+    padding: 1rem 1.5rem;
+    border-left: 1px solid var(--rule);
+    text-align: right;
+    transition: color 0.15s;
+  }
+
+  /* ── ACCURACY BLOCK ── */
+  .accuracy-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem; margin: 2.5rem 0;
+  }
+
+  .accuracy-card {
+    border: 1.5px solid var(--rule);
+    padding: 2rem 1.5rem; text-align: center;
+  }
+  .accuracy-card.primary {
+    border-color: var(--accent);
+    background: rgba(124,58,237,0.04);
+  }
+
+  .accuracy-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem; font-weight: 800;
+    line-height: 1; color: var(--accent);
+  }
+  .accuracy-card:not(.primary) .accuracy-value { color: var(--accent2); }
+
+  .accuracy-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  .accuracy-desc {
+    font-size: 13px; color: var(--muted);
+    margin-top: 0.8rem; line-height: 1.5;
+  }
+
+  /* ── CHART CONTAINER ── */
+  .chart-container {
+    margin: 2.5rem 0;
+    background: var(--highlight);
+    border: 1px solid rgba(124,58,237,0.15);
+    padding: 2rem;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .chart-container svg {
+    display: block;
+    overflow: visible;
+    height: auto;
+  }
+
+  .chart-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── DONUT ROW ── */
+  .donuts-row {
+    display: flex; gap: 3rem;
+    align-items: center; justify-content: center;
+    flex-wrap: wrap; margin: 2.5rem 0;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .donut-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.8rem;
+  }
+
+  .donut-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+    color: var(--muted); text-align: center;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .comparison-table {
+    width: 100%; border-collapse: collapse;
+    margin: 2.5rem 0; font-size: 13.5px;
+  }
+
+  .comparison-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; text-align: left;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--ink);
+    color: var(--muted); background: var(--highlight);
+  }
+
+  .comparison-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    transition: background 0.2s;
+  }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table tbody tr {
+    transition: background 0.2s, transform 0.2s;
+  }
+  .comparison-table tbody tr:hover td { background: var(--highlight); }
+
+  .td-model { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 2px; letter-spacing: 0.05em;
+  }
+  .badge-best { background: rgba(124,58,237,0.1); color: var(--accent); border: 1px solid rgba(124,58,237,0.3); }
+  .badge-good { background: rgba(3,105,161,0.1);  color: var(--accent2); border: 1px solid rgba(3,105,161,0.25); }
+  .badge-base { background: rgba(120,113,108,0.1); color: var(--muted); border: 1px solid rgba(120,113,108,0.25); }
+
+  /* ── GRADCAM EXPLAINER ── */
+  .gradcam-explainer {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; margin: 2.5rem 0;
+  }
+
+  .gradcam-panel {
+    border: 1px solid var(--rule); padding: 2rem;
+  }
+
+  .gradcam-panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 1rem; padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .gradcam-finding {
+    display: flex; gap: 1rem;
+    align-items: flex-start; margin-bottom: 1rem;
+  }
+
+  .gradcam-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 6px;
+  }
+  .dot-accent  { background: var(--accent);  }
+  .dot-accent2 { background: var(--accent2); }
+  .dot-accent3 { background: var(--accent3); }
+
+  .gradcam-finding-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code-bg);
+    padding: 1.5rem 2rem; margin: 2rem 0; overflow-x: auto;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .code-block.visible { opacity: 1; transform: translateY(0); }
+
+  .code-block pre {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--code-fg);
+    line-height: 1.7; white-space: pre;
+  }
+
+  .code-comment { color: #5a6a5a; }
+  .code-string  { color: #b8c87a; }
+  .code-keyword { color: #7ab8c8; }
+  .code-num     { color: #c8a07a; }
+
+  /* ── CITATION BOX ── */
+  .citation-box {
+    background: var(--highlight);
+    border: 1px solid rgba(124,58,237,0.2);
+    padding: 1.5rem 2rem; margin: 3rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px; line-height: 1.8; color: var(--muted);
+  }
+  .citation-box-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--ink); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+
+  /* ── WATERMARK LAYER ── */
+  .watermark-layer {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 9999; overflow: hidden;
+  }
+  .watermark-layer svg { width: 100%; height: 100%; }
+
+  /* ── AUTHOR STRIP ── */
+  .author-strip {
+    background: #0f0a1e;
+    color: var(--paper);
+    padding: 3rem 4rem;
+    display: flex; align-items: center;
+    gap: 3rem; flex-wrap: wrap;
+  }
+
+  .author-strip-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem; font-weight: 800; color: white;
+    flex-shrink: 0;
+    border: 3px solid rgba(124,58,237,0.3);
+    overflow: hidden; padding: 0;
+    animation: ringPulse 2.5s ease-in-out infinite;
+  }
+
+  .author-strip-info { flex: 1; min-width: 200px; }
+
+  .author-strip-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+
+  .author-strip-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem; font-weight: 800;
+    line-height: 1.1; margin-bottom: 0.6rem;
+  }
+
+  .author-strip-desc {
+    font-size: 13px; color: rgba(244,242,240,0.45); line-height: 1.6;
+  }
+
+  .author-strip-socials { display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .social-link {
+    display: flex; align-items: center; gap: 0.8rem;
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid rgba(124,58,237,0.2);
+    background: rgba(124,58,237,0.05);
+    transition: all 0.2s; min-width: 240px;
+    position: relative; overflow: hidden;
+  }
+  .social-link::before {
+    content: '';
+    position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.08), transparent);
+    transition: left 0.5s ease;
+  }
+  .social-link:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.35); }
+  .social-link:hover::before { left: 140%; }
+
+  .social-link-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .social-link-platform { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(244,242,240,0.35); display: block; }
+  .social-link-handle   { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: #f4f2f0; }
+
+  /* ── DOC FOOTER ── */
+  .doc-footer {
+    background: #080510;
+    color: rgba(244,242,240,0.3);
+    padding: 2rem 3rem; text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+  }
+
+  /* ── PHOTO AVATAR ── */
+  .photo-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+  .avatar-wrapper { position: relative; flex-shrink: 0; }
+  .avatar-wrapper::after {
+    content: ''; position: absolute; inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    z-index: -1;
+  }
+
+  /* ── SCROLL / UI ── */
+  #scroll-progress {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    z-index: 10000; transition: width 0.1s linear;
+  }
+
+  #back-to-top {
+    position: fixed; bottom: 2rem; right: 2rem;
+    width: 44px; height: 44px;
+    background: #0f0a1e; color: #f4f2f0;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 9990;
+  }
+  #back-to-top.visible { opacity: 1; transform: translateY(0); }
+  #back-to-top:hover { background: var(--accent); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes blink     { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeInUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
+  @keyframes slideDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
+  @keyframes counterPop{ 0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  @keyframes ringPulse { 0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.4)} 50%{box-shadow:0 0 0 10px rgba(124,58,237,0)} }
+  @keyframes glowPulse { 0%{box-shadow:0 0 0 0 rgba(124,58,237,0.5)} 60%{box-shadow:0 0 0 14px rgba(124,58,237,0)} 100%{box-shadow:0 0 0 0 rgba(124,58,237,0)} }
+
+  .cover-main > * { animation: fadeInUp 0.7s cubic-bezier(.22,.8,.46,1) both; }
+  .cover-kicker      { animation-delay:0.15s; }
+  .cover-title       { animation-delay:0.28s; }
+  .cover-subtitle    { animation-delay:0.44s; }
+  .cover-stats-row   { animation-delay:0.60s; }
+  .cover-author-card { animation-delay:0.75s; }
+  .cover-badge  { animation: slideDown 0.5s ease both; }
+  .cover-footer { animation: fadeInUp 0.6s ease 0.9s both; }
+
+  /* Scroll reveal classes */
+  .reveal {
+    opacity: 0; transform: translateY(36px);
+    transition: opacity 0.65s cubic-bezier(.22,.8,.46,1), transform 0.65s cubic-bezier(.22,.8,.46,1);
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  .reveal-left {
+    opacity: 0; transform: translateX(-36px);
+    transition: opacity 0.65s cubic-bezier(.22,.8,.46,1), transform 0.65s cubic-bezier(.22,.8,.46,1);
+  }
+  .reveal-left.visible { opacity: 1; transform: none; }
+
+  .reveal-scale {
+    opacity: 0; transform: scale(0.9);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+  .stagger-children > * {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.22,.8,.46,1);
+  }
+  .stagger-children.visible > *:nth-child(1)  { opacity:1;transform:none;transition-delay:0.05s; }
+  .stagger-children.visible > *:nth-child(2)  { opacity:1;transform:none;transition-delay:0.12s; }
+  .stagger-children.visible > *:nth-child(3)  { opacity:1;transform:none;transition-delay:0.19s; }
+  .stagger-children.visible > *:nth-child(4)  { opacity:1;transform:none;transition-delay:0.26s; }
+  .stagger-children.visible > *:nth-child(5)  { opacity:1;transform:none;transition-delay:0.33s; }
+  .stagger-children.visible > *:nth-child(6)  { opacity:1;transform:none;transition-delay:0.40s; }
+  .stagger-children.visible > *:nth-child(7)  { opacity:1;transform:none;transition-delay:0.47s; }
+  .stagger-children.visible > *:nth-child(8)  { opacity:1;transform:none;transition-delay:0.54s; }
+  .stagger-children.visible > *:nth-child(9)  { opacity:1;transform:none;transition-delay:0.61s; }
+  .stagger-children.visible > *:nth-child(10) { opacity:1;transform:none;transition-delay:0.68s; }
+  .stagger-children.visible > *:nth-child(11) { opacity:1;transform:none;transition-delay:0.75s; }
+  .stagger-children.visible > *:nth-child(12) { opacity:1;transform:none;transition-delay:0.82s; }
+  .stagger-children.visible > *:nth-child(13) { opacity:1;transform:none;transition-delay:0.89s; }
+  .stagger-children.visible > *:nth-child(14) { opacity:1;transform:none;transition-delay:0.96s; }
+  .stagger-children.visible > *:nth-child(15) { opacity:1;transform:none;transition-delay:1.03s; }
+  .stagger-children.visible > *:nth-child(16) { opacity:1;transform:none;transition-delay:1.10s; }
+  .stagger-children.visible > *:nth-child(17) { opacity:1;transform:none;transition-delay:1.17s; }
+  .stagger-children.visible > *:nth-child(18) { opacity:1;transform:none;transition-delay:1.24s; }
+  .stagger-children.visible > *:nth-child(19) { opacity:1;transform:none;transition-delay:1.31s; }
+  .stagger-children.visible > *:nth-child(20) { opacity:1;transform:none;transition-delay:1.38s; }
+  .stagger-children.visible > *:nth-child(21) { opacity:1;transform:none;transition-delay:1.45s; }
+  .stagger-children.visible > *:nth-child(22) { opacity:1;transform:none;transition-delay:1.52s; }
+  .stagger-children.visible > *:nth-child(23) { opacity:1;transform:none;transition-delay:1.59s; }
+  .stagger-children.visible > *:nth-child(24) { opacity:1;transform:none;transition-delay:1.66s; }
+  .stagger-children.visible > *:nth-child(25) { opacity:1;transform:none;transition-delay:1.73s; }
+
+  .accuracy-card.primary.visible-card {
+    animation: glowPulse 1.4s ease 0.3s;
+  }
+
+  @media (max-width: 768px) {
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+    .gen-grid      { grid-template-columns: repeat(2, 1fr); }
+    .accuracy-block{ grid-template-columns: 1fr; }
+    .gradcam-explainer { grid-template-columns: 1fr; }
+    .split-visual  { grid-template-columns: 1fr; }
+    .cover-title   { font-size: 3rem; }
+    .cover         { padding: 2rem; }
+    .doc-body      { padding: 3rem 1.5rem; }
+    .author-strip  { padding: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="scroll-progress"></div>
+<button id="back-to-top" title="Back to top">↑</button>
+
+<!-- WATERMARK -->
+<div class="watermark-layer" aria-hidden="true">
+  <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="wm-pattern" x="0" y="0" width="380" height="220" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+        <text x="10" y="60" font-family="Syne,sans-serif" font-size="15" font-weight="700" fill="rgba(13,13,13,0.04)" letter-spacing="1">RAKESH RAUT</text>
+        <text x="10" y="82" font-family="DM Mono,monospace" font-size="10" fill="rgba(13,13,13,0.025)" letter-spacing="0.5">github.com/Rex1671</text>
+        <text x="10" y="100" font-family="DM Mono,monospace" font-size="9" fill="rgba(13,13,13,0.02)" letter-spacing="0.3">linkedin · rakeshkumarraut</text>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#wm-pattern)"/>
+  </svg>
+</div>
+
+<!-- ══════ COVER ══════ -->
+<div class="cover">
+  <canvas id="particles-canvas"></canvas>
+  <div class="cover-badge">Technical Dataset Report</div>
+
+  <div class="cover-main">
+    <div class="cover-kicker">Computer Vision · Synthetic Image Detection · IEEE ICIP 2023</div>
+    <div class="cover-title">Arti<span class="accent">Fact</span></div>
+    <div class="cover-subtitle">
+      A Large-Scale Dataset with Artificial (Fake) and Factual (Real) Images — benchmarking generalizable and robust synthetic image detection across 25 generators and real-world impairments
+    </div>
+
+    <div class="cover-stats-row">
+      <div class="cover-stat">
+        <span class="cover-stat-num" id="stat-0">2.5M</span>
+        <span class="cover-stat-label">Total Images</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num" id="stat-1">25</span>
+        <span class="cover-stat-label">Generators</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num" id="stat-2">96.04%</span>
+        <span class="cover-stat-label">VIP Cup Accuracy</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num" id="stat-3">200×200</span>
+        <span class="cover-stat-label">Resolution (px)</span>
+      </div>
+    </div>
+
+    <div class="cover-author-card">
+      <div class="avatar-wrapper" style="width:42px;height:42px;">
+        <img src="YOUR_PHOTO_URL_HERE" alt="Rakesh Raut" class="photo-avatar"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="display:block;">
+        <div class="cover-author-avatar" style="display:none;position:absolute;inset:0;">RR</div>
+      </div>
+      <div class="cover-author-info">
+        <div class="cover-author-name">Rakesh Raut</div>
+        <div class="cover-author-links">
+          <a class="cover-author-link" href="https://github.com/Rex1671/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            Rex1671
+          </a>
+          <a class="cover-author-link" href="https://www.linkedin.com/in/rakeshkumarraut/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            rakeshkumarraut
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <div class="cover-authors">
+      Dataset: Rahman, Paul, Sarker, Hakim &amp; Fattah<br>
+      DOI: 10.1109/ICIP49359.2023.10222083 · Kaggle: awsaf49/artifact-dataset
+    </div>
+    <div class="cover-meta">
+      Report compiled by Rakesh Raut<br>
+      25 Generators · IEEE ICIP 2023 · 1st Place VIP Cup
+    </div>
+  </div>
+</div>
+
+<!-- ══════ BODY ══════ -->
+<div class="doc-body">
+
+  <!-- 01 EXECUTIVE SUMMARY -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01 —</span>
+      <h2 class="section-title">Executive Summary</h2>
+    </div>
+
+    <p>ArtiFact addresses the most critical weakness in prior synthetic image detectors: poor generalisation to generators never seen during training. Earlier datasets like CIFAKE rely on a single generative model and low-resolution images — conditions that produce detectors brittle to any real-world deployment.</p>
+
+    <p>Published at <em>IEEE ICIP 2023</em> by Rahman et al. from Bangladesh University of Engineering and Technology, ArtiFact assembles <strong>2,496,738 images</strong> from 25 distinct generation methods — spanning 13 GANs, 7 diffusion models, and 5 other techniques — alongside 964,989 real images from 8 curated sources. All images undergo randomised JPEG compression and downscaling to simulate social media post-processing, the real-world condition that defeats most prior detectors.</p>
+
+    <p>The team's solution — a multi-class CNN with filter stride reduction — won <strong>1st place in the IEEE VIP Cup at ICIP 2022</strong>, outperforming the second-best team by 8.34% on seen generators and a dramatic 15.08% on fully unseen generators.</p>
+
+    <div class="overview-grid stagger-children">
+      <div class="overview-card">
+        <div class="overview-card-icon">🗂️</div>
+        <div class="overview-card-value">2.5M</div>
+        <div class="overview-card-label">Total Images</div>
+        <div class="overview-card-desc">964K real from 8 sources + 1.53M fake from 25 distinct generators</div>
+      </div>
+      <div class="overview-card">
+        <div class="overview-card-icon">⚙️</div>
+        <div class="overview-card-value">25</div>
+        <div class="overview-card-label">Generators</div>
+        <div class="overview-card-desc">13 GANs + 7 Diffusion models + 5 other methods, including StyleGAN, Stable Diffusion, DDPM</div>
+      </div>
+      <div class="overview-card">
+        <div class="overview-card-icon">📐</div>
+        <div class="overview-card-value">200×200</div>
+        <div class="overview-card-label">Resolution (px)</div>
+        <div class="overview-card-desc">RGB JPEG — all images cropped, resized, and randomly compressed to simulate social platforms</div>
+      </div>
+      <div class="overview-card">
+        <div class="overview-card-icon">🏆</div>
+        <div class="overview-card-value">1st</div>
+        <div class="overview-card-label">IEEE VIP Cup 2022</div>
+        <div class="overview-card-desc">96.04% on seen generators; 90.60% on fully unseen generators — 15.08% above 2nd place</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="highlight-box-title">Key Contribution</div>
+      <p>The fundamental innovation is a <strong>multi-class training strategy</strong> combined with <strong>filter stride reduction</strong>. Instead of training a binary real/fake classifier, each generator is treated as its own class — forcing the model to learn generator-specific artefact signatures. At test time these all collapse to a single "Fake" label. This approach dramatically improves generalisation to generators the model has never seen.</p>
+    </div>
+  </div>
+
+  <!-- 02 DATASET COMPOSITION -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02 —</span>
+      <h2 class="section-title">Dataset Composition</h2>
+    </div>
+
+    <p>Unlike CIFAKE's balanced 50/50 split, ArtiFact reflects a realistic scenario: fake images outnumber real images by roughly 1.6:1, matching the asymmetric production capacity of generative models. The dataset is organised into per-generator subdirectories, each containing a <code>metadata.csv</code> with image path, binary target (0=real, 1=fake), and object category.</p>
+
+    <div class="split-visual">
+      <div class="split-card" data-label="Full Dataset">
+        <div class="split-card-title">2,496,738 Total Images</div>
+        <div class="split-bar-container">
+          <div class="split-bar-label"><span>REAL images</span><span>964,989 (38.7%)</span></div>
+          <div class="split-bar-track"><div class="split-bar-fill fill-real" style="--target-w:38.7%"></div></div>
+        </div>
+        <div class="split-bar-container">
+          <div class="split-bar-label"><span>FAKE images</span><span>1,531,749 (61.3%)</span></div>
+          <div class="split-bar-track"><div class="split-bar-fill fill-fake" style="--target-w:61.3%"></div></div>
+        </div>
+      </div>
+      <div class="split-card" data-label="VIP Cup Subset">
+        <div class="split-card-title">222,000 Images (VIP Cup)</div>
+        <div class="split-bar-container">
+          <div class="split-bar-label"><span>REAL images</span><span>71,000 (32%)</span></div>
+          <div class="split-bar-track"><div class="split-bar-fill fill-real" style="--target-w:32%"></div></div>
+        </div>
+        <div class="split-bar-container">
+          <div class="split-bar-label"><span>FAKE images</span><span>151,000 (68%)</span></div>
+          <div class="split-bar-track"><div class="split-bar-fill fill-fake" style="--target-w:68%"></div></div>
+        </div>
+        <div class="split-bar-container" style="margin-top:1rem;">
+          <div class="split-bar-label"><span>Generators represented</span><span>13 of 25</span></div>
+          <div class="split-bar-track"><div class="split-bar-fill fill-total" style="--target-w:52%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donut chart -->
+    <div class="chart-container">
+      <div class="chart-title">Dataset Balance Visualisation — Real vs Fake</div>
+      <div class="donuts-row">
+        <div class="donut-item">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="58" fill="none" stroke="#e8e0d0" stroke-width="22"/>
+            <!-- 38.7% real -->
+            <circle cx="75" cy="75" r="58" fill="none" stroke="#059669" stroke-width="22"
+              stroke-dasharray="140.7 364.4" stroke-dashoffset="91.1"/>
+            <!-- 61.3% fake -->
+            <circle cx="75" cy="75" r="58" fill="none" stroke="#7c3aed" stroke-width="22"
+              stroke-dasharray="223.7 364.4" stroke-dashoffset="-49.6"/>
+            <text x="75" y="70" text-anchor="middle" font-family="Syne,sans-serif" font-size="16" font-weight="800" fill="#0d0d0d">2.5M</text>
+            <text x="75" y="88" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#78716c">IMAGES</text>
+          </svg>
+          <div class="donut-label">Full Dataset<br>38.7% Real · 61.3% Fake</div>
+        </div>
+
+        <div class="donut-item">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#e8e0d0" stroke-width="18"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#059669" stroke-width="18"
+              stroke-dasharray="89.2 289" stroke-dashoffset="72.3"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#7c3aed" stroke-width="18"
+              stroke-dasharray="199.8 289" stroke-dashoffset="-16.9"/>
+            <text x="60" y="56" text-anchor="middle" font-family="Syne,sans-serif" font-size="13" font-weight="800" fill="#0d0d0d">222K</text>
+            <text x="60" y="71" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#78716c">VIP CUP</text>
+          </svg>
+          <div class="donut-label">VIP Cup Subset</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.8rem;">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <div style="width:14px;height:14px;background:#059669;border-radius:2px;flex-shrink:0;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;">REAL — 8 curated sources</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <div style="width:14px;height:14px;background:#7c3aed;border-radius:2px;flex-shrink:0;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;">FAKE — 25 generators</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 GENERATORS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03 —</span>
+      <h2 class="section-title">All 25 Generators</h2>
+    </div>
+
+    <p>ArtiFact's defining characteristic is its generator diversity. By spanning fundamentally different architectures — GANs that learn adversarially, diffusion models that denoise iteratively, and specialised inpainting/translation systems — the dataset forces detectors to identify universal forgery signatures rather than method-specific fingerprints.</p>
+
+    <div class="gen-grid stagger-children">
+      <!-- GANs -->
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">StyleGAN1</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">StyleGAN2</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">StyleGAN3</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">ProGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">BigGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">StarGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">CycleGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">GauGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">GANformer</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">ProjectedGAN</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">CIPS</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">Gen. Inpainting</div></div>
+      <div class="gen-cell"><div class="gen-type gan">GAN</div><div class="gen-name">FaceSynthetics</div></div>
+      <!-- Diffusion -->
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">Stable Diffusion</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">Latent Diffusion</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">VQ Diffusion</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">DDPM</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">DiffusionGAN</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">DD-GAN</div></div>
+      <div class="gen-cell"><div class="gen-type diff">Diffusion</div><div class="gen-name">Palette</div></div>
+      <!-- Other -->
+      <div class="gen-cell"><div class="gen-type other">Other</div><div class="gen-name">Glide</div></div>
+      <div class="gen-cell"><div class="gen-type other">Other</div><div class="gen-name">Taming Transformer</div></div>
+      <div class="gen-cell"><div class="gen-type other">Other</div><div class="gen-name">MAT</div></div>
+      <div class="gen-cell"><div class="gen-type other">Other</div><div class="gen-name">LaMa</div></div>
+      <div class="gen-cell"><div class="gen-type other">Other</div><div class="gen-name">SFHQ</div></div>
+    </div>
+
+    <!-- Generator type breakdown chart -->
+    <div class="chart-container">
+      <div class="chart-title">Generator Type Breakdown — 25 Total</div>
+      <svg width="100%" height="180" viewBox="0 0 700 180" preserveAspectRatio="xMidYMid meet" style="min-height:180px;display:block;">
+        <!-- GAN bar 13/25 = 52% → 364px -->
+        <rect x="120" y="20"  width="364" height="36" fill="#7c3aed" opacity="0.85"/>
+        <text x="112" y="44"  font-family="DM Mono,monospace" font-size="11" fill="#2a2520" text-anchor="end">GANs</text>
+        <text x="492" y="44"  font-family="DM Mono,monospace" font-size="11" fill="#7c3aed" font-weight="bold">13 models (52%)</text>
+
+        <!-- Diffusion 7/25 = 28% → 196px -->
+        <rect x="120" y="72"  width="196" height="36" fill="#0369a1" opacity="0.85"/>
+        <text x="112" y="96"  font-family="DM Mono,monospace" font-size="11" fill="#2a2520" text-anchor="end">Diffusion</text>
+        <text x="324" y="96"  font-family="DM Mono,monospace" font-size="11" fill="#0369a1" font-weight="bold">7 models (28%)</text>
+
+        <!-- Other 5/25 = 20% → 140px -->
+        <rect x="120" y="124" width="140" height="36" fill="#059669" opacity="0.85"/>
+        <text x="112" y="148" font-family="DM Mono,monospace" font-size="11" fill="#2a2520" text-anchor="end">Other</text>
+        <text x="268" y="148" font-family="DM Mono,monospace" font-size="11" fill="#059669" font-weight="bold">5 models (20%)</text>
+
+        <!-- axis -->
+        <line x1="120" y1="10" x2="120" y2="165" stroke="#0d0d0d" stroke-width="1.5"/>
+        <line x1="120" y1="165" x2="680" y2="165" stroke="#0d0d0d" stroke-width="1.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 04 DATA PIPELINE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04 —</span>
+      <h2 class="section-title">Data Generation & Pre-processing Pipeline</h2>
+    </div>
+
+    <p>Every image in ArtiFact — whether real or synthetic — goes through a standardised transformation pipeline that applies realistic social media impairments. This is the factor that separates ArtiFact from earlier benchmarks: detectors trained here must be robust to compression artefacts and resolution degradation, not just raw pixel patterns from the generator.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-diagram-title">Pipeline — Real Image Acquisition (8 Sources)</div>
+      <div class="arch-flow">
+        <div class="arch-node hl-real"><div class="arch-node-title">Source Images</div><div class="arch-node-sub">ImageNet, COCO, FFHQ, AFHQ…</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-real"><div class="arch-node-title">Random Crop</div><div class="arch-node-sub">Variable input size</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-real"><div class="arch-node-title">Resize 200×200</div><div class="arch-node-sub">Bicubic interpolation</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-real"><div class="arch-node-title">JPEG Compress</div><div class="arch-node-sub">Random quality level</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-real"><div class="arch-node-title">REAL Subset</div><div class="arch-node-sub">964,989 images</div></div>
+      </div>
+    </div>
+
+    <div class="arch-diagram" style="margin-top:1rem;">
+      <div class="arch-diagram-title">Pipeline — Fake Image Synthesis (25 Generators)</div>
+      <div class="arch-flow">
+        <div class="arch-node hl-fake"><div class="arch-node-title">25 Generators</div><div class="arch-node-sub">GANs + Diffusion + Other</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-fake"><div class="arch-node-title">Random Sample</div><div class="arch-node-sub">Per-generator sampling</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-fake"><div class="arch-node-title">Resize 200×200</div><div class="arch-node-sub">+ Random Downscale</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-fake"><div class="arch-node-title">JPEG Compress</div><div class="arch-node-sub">Random quality level</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node hl-fake"><div class="arch-node-title">FAKE Subset</div><div class="arch-node-sub">1,531,749 images</div></div>
+      </div>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">1</div>
+        <div>
+          <div class="pipeline-step-title">Random Crop</div>
+          <div class="pipeline-step-desc">Images are randomly cropped before resizing, introducing spatial variation and removing the fixed-border artefacts that some GAN architectures produce at image boundaries.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">2</div>
+        <div>
+          <div class="pipeline-step-title">Resize to 200×200</div>
+          <div class="pipeline-step-desc">All images are resized to 200×200 pixels — larger than CIFAKE's 32×32, enabling more spatial detail and making the classification task richer but also more computationally demanding.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">3</div>
+        <div>
+          <div class="pipeline-step-title">Random JPEG Compression</div>
+          <div class="pipeline-step-desc">JPEG compression at a random quality level is applied to every image. This deliberately corrupts the subtle high-frequency generator fingerprints that naive detectors rely on, forcing models to learn more robust discriminative features.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">4</div>
+        <div>
+          <div class="pipeline-step-title">Optional Downscale (Fake only)</div>
+          <div class="pipeline-step-desc">Fake images additionally undergo random downscaling, simulating the quality loss from social media platform re-encoding — the most common real-world post-processing condition for AI-generated imagery.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 MODEL ARCHITECTURE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05 —</span>
+      <h2 class="section-title">Model Architecture</h2>
+    </div>
+
+    <p>The authors' solution introduces two core innovations on top of a standard CNN backbone: a multi-class training objective and filter stride reduction. Together these address both the generalisation problem (unseen generators) and the social platform robustness problem (compression artefacts).</p>
+
+    <div class="highlight-box" style="border-left-color:var(--accent2);background:rgba(3,105,161,0.04);">
+      <div class="highlight-box-title" style="color:var(--accent2);">Core Innovation — Multi-Class Training</div>
+      <p>Instead of binary real/fake training, each generator is its own class. The model learns what makes a StyleGAN image different from a ProGAN image, what makes a DDPM image different from a Stable Diffusion image, and so on. This builds a rich internal representation of "what fakeness looks like" that generalises far better to unseen generators than a direct real/fake objective ever could.</p>
+    </div>
+
+    <div class="cnn-layers">
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Input Layer</div>
+        <div class="cnn-layer-desc">200×200×3 RGB image tensor (after pipeline pre-processing)</div>
+        <div class="cnn-layer-params">120,000 values</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Conv2D + ReLU</div>
+        <div class="cnn-layer-desc">Reduced stride (stride=1 instead of 2) to preserve high-frequency artefact signals in early layers</div>
+        <div class="cnn-layer-params">stride=1 ★</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Max Pooling</div>
+        <div class="cnn-layer-desc">Spatial downsampling after feature extraction — applied after stride reduction, not before</div>
+        <div class="cnn-layer-params">2×2</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Conv2D Blocks ×N</div>
+        <div class="cnn-layer-desc">Deeper feature hierarchy capturing generator-specific texture, frequency, and pattern signatures</div>
+        <div class="cnn-layer-params">multiple</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Global Avg Pooling</div>
+        <div class="cnn-layer-desc">Reduces spatial dimensions while preserving channel-wise feature statistics</div>
+        <div class="cnn-layer-params">—</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Dense + Dropout</div>
+        <div class="cnn-layer-desc">Fully connected layer with regularisation to prevent overfitting to training generators</div>
+        <div class="cnn-layer-params">variable</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Multi-Class Output</div>
+        <div class="cnn-layer-desc">N+1 neurons (one per generator + one for real) with Softmax — training objective</div>
+        <div class="cnn-layer-params">26 classes</div>
+      </div>
+      <div class="cnn-layer">
+        <div class="cnn-layer-name">Binary Inference Head</div>
+        <div class="cnn-layer-desc">At test time all fake-class scores are collapsed to a single FAKE label → binary output</div>
+        <div class="cnn-layer-params">REAL / FAKE</div>
+      </div>
+    </div>
+
+    <div class="accuracy-block">
+      <div class="accuracy-card primary">
+        <div class="accuracy-value">96.04%</div>
+        <div class="accuracy-label">Test 1 Accuracy</div>
+        <div class="accuracy-desc">Seen generators — same models as training. Best performing team at IEEE VIP Cup 2022.</div>
+      </div>
+      <div class="accuracy-card">
+        <div class="accuracy-value">83.00%</div>
+        <div class="accuracy-label">Test 2 Accuracy</div>
+        <div class="accuracy-desc">Partially unseen generators — some models unknown at training time.</div>
+      </div>
+      <div class="accuracy-card">
+        <div class="accuracy-value">90.60%</div>
+        <div class="accuracy-label">Test 3 Accuracy</div>
+        <div class="accuracy-desc">Fully unseen generators — 15.08% above 2nd place. Proves generalisation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 RESULTS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06 —</span>
+      <h2 class="section-title">IEEE VIP Cup Results</h2>
+    </div>
+
+    <p>The IEEE VIP Cup at ICIP 2022 used a 222K subset of ArtiFact with three blind test sets of increasing difficulty. Test 1 uses generators known to all teams, Test 2 uses partially undisclosed generators, and Test 3 uses generators completely unknown at training time — the hardest and most realistic evaluation condition.</p>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Test 1 (Seen)</th>
+          <th>Test 2 (Partial)</th>
+          <th>Test 3 (Unseen)</th>
+          <th>Rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-model">Megatron (ArtiFact authors)</td>
+          <td><strong>96.04%</strong></td>
+          <td><strong>83.00%</strong></td>
+          <td><strong>90.60%</strong></td>
+          <td><span class="badge badge-best">1st Place</span></td>
+        </tr>
+        <tr>
+          <td class="td-model">FAU Erlangen-Nürnberg</td>
+          <td>87.14%</td>
+          <td><strong>81.74%</strong></td>
+          <td>75.52%</td>
+          <td><span class="badge badge-good">2nd Place</span></td>
+        </tr>
+        <tr>
+          <td class="td-model">Sherlock</td>
+          <td>87.70%</td>
+          <td>77.52%</td>
+          <td>73.45%</td>
+          <td><span class="badge badge-base">3rd Place</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Grouped bar chart for VIP Cup results -->
+    <div class="chart-container">
+      <div class="chart-title">VIP Cup Accuracy Comparison — Top 3 Teams</div>
+      <svg width="100%" height="220" viewBox="0 0 700 220" preserveAspectRatio="xMidYMid meet" style="min-height:220px;display:block;">
+        <!-- Grid -->
+        <line x1="160" y1="10"  x2="660" y2="10"  stroke="#d4cfc8" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="160" y1="50"  x2="660" y2="50"  stroke="#d4cfc8" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="160" y1="90"  x2="660" y2="90"  stroke="#d4cfc8" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="160" y1="130" x2="660" y2="130" stroke="#d4cfc8" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="160" y1="155" x2="660" y2="155" stroke="#0d0d0d" stroke-width="1.5"/>
+        <line x1="160" y1="10"  x2="160" y2="155" stroke="#0d0d0d" stroke-width="1.5"/>
+
+        <!-- Y labels -->
+        <text x="152" y="14"  font-family="DM Mono,monospace" font-size="8" fill="#78716c" text-anchor="end">100%</text>
+        <text x="152" y="54"  font-family="DM Mono,monospace" font-size="8" fill="#78716c" text-anchor="end">75%</text>
+        <text x="152" y="94"  font-family="DM Mono,monospace" font-size="8" fill="#78716c" text-anchor="end">50%</text>
+        <text x="152" y="134" font-family="DM Mono,monospace" font-size="8" fill="#78716c" text-anchor="end">25%</text>
+
+        <!-- Group 1: Test 1 -->
+        <!-- Megatron 96.04% → height=138 → y=17 -->
+        <rect x="185" y="17" width="38" height="138" fill="#7c3aed"/>
+        <!-- FAU 87.14% → height=125 → y=30 -->
+        <rect x="226" y="30" width="38" height="125" fill="#0369a1" opacity="0.8"/>
+        <!-- Sherlock 87.70% → height=126 → y=29 -->
+        <rect x="267" y="29" width="38" height="126" fill="#78716c" opacity="0.7"/>
+        <text x="240" y="175" font-family="DM Mono,monospace" font-size="9" fill="#78716c" text-anchor="middle">Test 1 (Seen)</text>
+
+        <!-- Group 2: Test 2 -->
+        <rect x="345" y="35" width="38" height="120" fill="#7c3aed"/>
+        <rect x="386" y="38" width="38" height="117" fill="#0369a1" opacity="0.8"/>
+        <rect x="427" y="44" width="38" height="111" fill="#78716c" opacity="0.7"/>
+        <text x="400" y="175" font-family="DM Mono,monospace" font-size="9" fill="#78716c" text-anchor="middle">Test 2 (Partial)</text>
+
+        <!-- Group 3: Test 3 -->
+        <rect x="505" y="25" width="38" height="130" fill="#7c3aed"/>
+        <rect x="546" y="47" width="38" height="108" fill="#0369a1" opacity="0.8"/>
+        <rect x="587" y="49" width="38" height="106" fill="#78716c" opacity="0.7"/>
+        <text x="560" y="175" font-family="DM Mono,monospace" font-size="9" fill="#78716c" text-anchor="middle">Test 3 (Unseen)</text>
+
+        <!-- Legend -->
+        <rect x="185" y="195" width="10" height="10" fill="#7c3aed"/>
+        <text x="200" y="204" font-family="DM Mono,monospace" font-size="9" fill="#78716c">Megatron (Ours)</text>
+        <rect x="320" y="195" width="10" height="10" fill="#0369a1" opacity="0.8"/>
+        <text x="335" y="204" font-family="DM Mono,monospace" font-size="9" fill="#78716c">FAU Erlangen</text>
+        <rect x="450" y="195" width="10" height="10" fill="#78716c" opacity="0.7"/>
+        <text x="465" y="204" font-family="DM Mono,monospace" font-size="9" fill="#78716c">Sherlock</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 07 EXPLAINABILITY -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07 —</span>
+      <h2 class="section-title">Why Multi-Class Works — Explainability</h2>
+    </div>
+
+    <p>The multi-class strategy works because different generative architectures leave fundamentally different artefact signatures. GANs produce checkerboard patterns from transposed convolutions and spectral anomalies at specific frequencies. Diffusion models produce different noise residuals and texture statistics. By learning to separate these, the model builds internal representations that transfer to generators it has never encountered.</p>
+
+    <div class="gradcam-explainer">
+      <div class="gradcam-panel">
+        <div class="gradcam-panel-title">GAN Artefact Signatures</div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent"></div>
+          <div class="gradcam-finding-text"><strong>Checkerboard patterns</strong> — transposed convolution artefacts appear in the frequency domain at regular intervals in many GAN architectures.</div>
+        </div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent"></div>
+          <div class="gradcam-finding-text"><strong>Spectral peaks</strong> — GAN-generated images show anomalous spikes in 2D Fourier spectra at frequencies corresponding to upsampling strides.</div>
+        </div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent"></div>
+          <div class="gradcam-finding-text"><strong>Texture inconsistency</strong> — backgrounds and fine-grained textures (hair, fur, fabric) often exhibit repetitive statistical patterns absent in real photography.</div>
+        </div>
+      </div>
+      <div class="gradcam-panel">
+        <div class="gradcam-panel-title">Diffusion Model Signatures</div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent2"></div>
+          <div class="gradcam-finding-text"><strong>Denoising residuals</strong> — the iterative denoising process leaves subtle pixel-level noise patterns that differ statistically from camera sensor noise in real photographs.</div>
+        </div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent2"></div>
+          <div class="gradcam-finding-text"><strong>Boundary artefacts</strong> — attention mechanisms in diffusion U-Nets create characteristic edge behaviour at object boundaries that real images do not exhibit.</div>
+        </div>
+        <div class="gradcam-finding">
+          <div class="gradcam-dot dot-accent2"></div>
+          <div class="gradcam-finding-text"><strong>Compression sensitivity</strong> — JPEG compression affects diffusion-generated images differently from real images at the same quality level, creating distinguishable DCT coefficient distributions.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="border-left-color:var(--accent3);background:rgba(5,150,105,0.04);">
+      <div class="highlight-box-title" style="color:var(--accent3);">Filter Stride Reduction — Why It Matters</div>
+      <p>Standard CNN architectures use stride-2 in early convolutional layers to quickly downsample spatial resolution. This discards the very high-frequency signals — above the Nyquist limit of the subsampled grid — that carry generator fingerprints. By reducing early-layer strides to 1 and delaying pooling, the model retains these signals long enough for subsequent layers to exploit them as features, directly explaining the large performance gap on unseen generators.</p>
+    </div>
+  </div>
+
+  <!-- 08 USAGE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08 —</span>
+      <h2 class="section-title">Using the Dataset</h2>
+    </div>
+
+    <p>ArtiFact is organised into per-generator subdirectories. Each contains a <code>metadata.csv</code> with three columns: <code>image_path</code>, <code>target</code> (0=real, 1=fake), and <code>category</code>. Load all CSVs, aggregate, then use your standard image loader.</p>
+
+    <div class="code-block">
+      <pre><span class="code-comment"># Download via Kaggle API</span>
+kaggle datasets download -d awsaf49/artifact-dataset
+unzip artifact-dataset.zip -d ./artifact</pre>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="code-comment"># PyTorch — Custom Dataset loading all metadata CSVs</span>
+<span class="code-keyword">import</span> os, pandas <span class="code-keyword">as</span> pd
+<span class="code-keyword">from</span> PIL <span class="code-keyword">import</span> Image
+<span class="code-keyword">from</span> torch.utils.data <span class="code-keyword">import</span> Dataset, DataLoader
+<span class="code-keyword">import</span> torchvision.transforms <span class="code-keyword">as</span> T
+
+<span class="code-comment"># Aggregate all metadata.csv files</span>
+root = <span class="code-string">'./artifact'</span>
+dfs  = []
+<span class="code-keyword">for</span> folder <span class="code-keyword">in</span> os.listdir(root):
+    csv = os.path.join(root, folder, <span class="code-string">'metadata.csv'</span>)
+    <span class="code-keyword">if</span> os.path.exists(csv):
+        df = pd.read_csv(csv)
+        df[<span class="code-string">'full_path'</span>] = df[<span class="code-string">'image_path'</span>].apply(
+            <span class="code-keyword">lambda</span> p: os.path.join(root, folder, p))
+        dfs.append(df)
+
+meta = pd.concat(dfs, ignore_index=<span class="code-keyword">True</span>)
+<span class="code-comment"># target: 0 = real, 1 = fake</span>
+
+<span class="code-keyword">class</span> ArtiFact(Dataset):
+    <span class="code-keyword">def</span> __init__(self, df, transform=<span class="code-keyword">None</span>):
+        self.df = df.reset_index(drop=<span class="code-keyword">True</span>)
+        self.transform = transform
+
+    <span class="code-keyword">def</span> __len__(self): <span class="code-keyword">return</span> len(self.df)
+
+    <span class="code-keyword">def</span> __getitem__(self, idx):
+        row = self.df.iloc[idx]
+        img = Image.open(row[<span class="code-string">'full_path'</span>]).convert(<span class="code-string">'RGB'</span>)
+        <span class="code-keyword">if</span> self.transform: img = self.transform(img)
+        <span class="code-keyword">return</span> img, int(row[<span class="code-string">'target'</span>])
+
+transform = T.Compose([
+    T.Resize((<span class="code-num">200</span>, <span class="code-num">200</span>)),
+    T.ToTensor(),
+    T.Normalize(mean=[<span class="code-num">0.5</span>,<span class="code-num">0.5</span>,<span class="code-num">0.5</span>], std=[<span class="code-num">0.5</span>,<span class="code-num">0.5</span>,<span class="code-num">0.5</span>]),
+])
+
+loader = DataLoader(ArtiFact(meta, transform), batch_size=<span class="code-num">64</span>,
+                    shuffle=<span class="code-keyword">True</span>, num_workers=<span class="code-num">4</span>)</pre>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="code-comment"># TensorFlow / Keras</span>
+<span class="code-keyword">import</span> tensorflow <span class="code-keyword">as</span> tf, pandas <span class="code-keyword">as</span> pd, os
+
+root = <span class="code-string">'./artifact'</span>
+paths, labels = [], []
+<span class="code-keyword">for</span> folder <span class="code-keyword">in</span> os.listdir(root):
+    csv = os.path.join(root, folder, <span class="code-string">'metadata.csv'</span>)
+    <span class="code-keyword">if</span> os.path.exists(csv):
+        df = pd.read_csv(csv)
+        <span class="code-keyword">for</span> _, row <span class="code-keyword">in</span> df.iterrows():
+            paths.append(os.path.join(root, folder, row[<span class="code-string">'image_path'</span>]))
+            labels.append(int(row[<span class="code-string">'target'</span>]))
+
+<span class="code-keyword">def</span> load(path, label):
+    img = tf.io.read_file(path)
+    img = tf.image.decode_jpeg(img, channels=<span class="code-num">3</span>)
+    img = tf.image.resize(img, [<span class="code-num">200</span>, <span class="code-num">200</span>])
+    img = tf.cast(img, tf.float32) / <span class="code-num">255.0</span>
+    <span class="code-keyword">return</span> img, label
+
+ds = tf.data.Dataset.from_tensor_slices((paths, labels))
+ds = ds.map(load, num_parallel_calls=tf.data.AUTOTUNE)
+ds = ds.shuffle(<span class="code-num">10000</span>).batch(<span class="code-num">64</span>).prefetch(tf.data.AUTOTUNE)</pre>
+    </div>
+  </div>
+
+  <!-- 09 APPLICATIONS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09 —</span>
+      <h2 class="section-title">Applications &amp; Limitations</h2>
+    </div>
+
+    <p>ArtiFact's scale, generator diversity, and robustness to post-processing make it suitable for a range of high-stakes applications in media forensics and AI safety.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:2rem 0;">
+      <div style="border:1px solid var(--rule);padding:1.5rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:0.6rem;">🌐 Social Media Moderation</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">The JPEG + downscale impairment pipeline directly targets the platform re-encoding conditions where most prior detectors fail. Models trained on ArtiFact are more deployment-ready than any single-generator baseline.</div>
+      </div>
+      <div style="border:1px solid var(--rule);padding:1.5rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:0.6rem;">🔬 Generalisation Research</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">The three-tier test structure (seen / partial / unseen) provides a rigorous framework for evaluating cross-generator generalisation — a standard that other benchmarks lack entirely.</div>
+      </div>
+      <div style="border:1px solid var(--rule);padding:1.5rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:0.6rem;">⚖️ Deepfake Detection</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">Human face and face-adjacent categories (FFHQ, AFHQ, CelebA-HQ, Metfaces) make ArtiFact directly applicable to deepfake detection pipelines for identity verification and media authentication.</div>
+      </div>
+      <div style="border:1px solid var(--rule);padding:1.5rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:0.6rem;">📡 Frequency Domain Analysis</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">The diverse generator pool enables systematic study of artefact signatures in the spectral domain — identifying which frequency bands carry the most discriminative generator-specific information.</div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="border-left-color:var(--accent2);background:rgba(3,105,161,0.04);">
+      <div class="highlight-box-title" style="color:var(--accent2);">Key Limitations</div>
+      <p><strong>Licence complexity</strong> — different generators carry different licences (some non-commercial only); commercial use requires per-source review. <strong>Class imbalance</strong> — 964K real vs 1.53M fake; use weighted loss or oversampling. <strong>Generator currency</strong> — the dataset covers models up to ~2022; SDXL, DALL-E 3, Midjourney v6, and Sora are not represented. <strong>Compute cost</strong> — 2.5M images at 200×200 requires substantial GPU resources and careful data pipeline engineering.</p>
+    </div>
+  </div>
+
+  <!-- CITATION -->
+  <div class="citation-box">
+    <div class="citation-box-title">Required Citation</div>
+    Rahman, M.A., Paul, B., Sarker, N.H., Hakim, Z.I.A. and Fattah, S.A. (2023). ArtiFact: A Large-Scale Dataset with Artificial and Factual Images for Generalizable and Robust Synthetic Image Detection. <em>2023 IEEE International Conference on Image Processing (ICIP)</em>, pp. 2200–2204. DOI: 10.1109/ICIP49359.2023.10222083<br><br>
+    ArXiv preprint: https://arxiv.org/abs/2302.11970<br>
+    Dataset URL: https://www.kaggle.com/datasets/awsaf49/artifact-dataset
+  </div>
+
+</div>
+
+<!-- AUTHOR STRIP -->
+<div class="author-strip reveal">
+  <div class="author-strip-avatar" style="overflow:hidden;padding:0;">
+    <img src="YOUR_PHOTO_URL_HERE" alt="Rakesh Raut" class="photo-avatar"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="display:block;">
+    <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:white;">RR</div>
+  </div>
+
+  <div class="author-strip-info">
+    <div class="author-strip-label">Report compiled by</div>
+    <div class="author-strip-name">Rakesh Raut</div>
+    <div class="author-strip-desc">
+      Technical document based on the ArtiFact dataset by Rahman et al. (IEEE ICIP, 2023).<br>
+      Dataset sourced from Kaggle · github.com/Rex1671 · linkedin.com/in/rakeshkumarraut
+    </div>
+  </div>
+
+  <div class="author-strip-socials">
+    <a class="social-link" href="https://github.com/Rex1671/" target="_blank">
+      <div class="social-link-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(244,242,240,0.7)">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+      </div>
+      <div class="social-link-text">
+        <span class="social-link-platform">GitHub</span>
+        <span class="social-link-handle">github.com/Rex1671</span>
+      </div>
+    </a>
+    <a class="social-link" href="https://www.linkedin.com/in/rakeshkumarraut/" target="_blank">
+      <div class="social-link-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(244,242,240,0.7)">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+      </div>
+      <div class="social-link-text">
+        <span class="social-link-platform">LinkedIn</span>
+        <span class="social-link-handle">rakeshkumarraut</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="doc-footer">
+  ARTIFACT TECHNICAL REPORT · Compiled by Rakesh Raut · github.com/Rex1671 · linkedin.com/in/rakeshkumarraut · IEEE ICIP 2023 · DOI 10.1109/ICIP49359.2023.10222083
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   ArtiFact Report — Animation Engine
+   Rakesh Raut · github.com/Rex1671
+══════════════════════════════════════ */
+
+/* 1. SCROLL PROGRESS + BACK TO TOP */
+const bar = document.getElementById('scroll-progress');
+const btn = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+  bar.style.width = pct + '%';
+  btn.classList.toggle('visible', window.scrollY > 400);
+});
+btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+/* 2. PARTICLE CANVAS */
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, P = [];
+
+  function resize() {
+    const cover = canvas.parentElement;
+    W = canvas.width  = cover.offsetWidth;
+    H = canvas.height = cover.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 75; i++) P.push({
+    x: Math.random() * W, y: Math.random() * H,
+    r: Math.random() * 1.4 + 0.3,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    a: Math.random() * 0.5 + 0.1,
+  });
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    P.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(167,139,250,${p.a})`;
+      ctx.fill();
+    });
+    for (let i = 0; i < P.length; i++)
+      for (let j = i + 1; j < P.length; j++) {
+        const dx = P[i].x - P[j].x, dy = P[i].y - P[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 95) {
+          ctx.beginPath();
+          ctx.moveTo(P[i].x, P[i].y);
+          ctx.lineTo(P[j].x, P[j].y);
+          ctx.strokeStyle = `rgba(167,139,250,${0.09*(1-d/95)})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* 3. STAT COUNTERS */
+function animateCounter(el, target, suffix, duration) {
+  const isFloat = String(target).includes('.');
+  const dec = isFloat ? String(target).split('.')[1].length : 0;
+  const start = performance.now();
+  (function update(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = (isFloat ? (target*e).toFixed(dec) : Math.floor(target*e)) + suffix;
+    if (p < 1) requestAnimationFrame(update);
+    else el.textContent = (isFloat ? target.toFixed(dec) : target) + suffix;
+  })(start);
+}
+
+const statDefs = [
+  { val: 2.5,  suffix: 'M' },
+  { val: 25,   suffix: ''  },
+  { val: 96.04,suffix: '%' },
+  { val: null, suffix: ''  },
+];
+document.querySelectorAll('.cover-stat-num').forEach((el, i) => {
+  const d = statDefs[i];
+  if (d && d.val !== null) {
+    el.textContent = '0' + d.suffix;
+    setTimeout(() => animateCounter(el, d.val, d.suffix, 1800), 900 + i * 160);
+  }
+});
+
+/* 4. TYPING EFFECT — COVER KICKER */
+const kicker = document.querySelector('.cover-kicker');
+if (kicker) {
+  const orig = kicker.textContent;
+  kicker.textContent = '';
+  let idx = 0;
+  setTimeout(() => {
+    const t = setInterval(() => {
+      kicker.textContent = orig.slice(0, ++idx);
+      if (idx >= orig.length) { clearInterval(t); kicker.style.borderRight = 'none'; }
+    }, 28);
+  }, 350);
+}
+
+/* 5. INTERSECTION OBSERVER */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    ['reveal','reveal-left','reveal-scale'].forEach(c => { if (el.classList.contains(c)) el.classList.add('visible'); });
+    if (el.classList.contains('stagger-children')) el.classList.add('visible');
+    if (el.classList.contains('section-header')) el.classList.add('visible');
+    if (el.classList.contains('code-block')) el.classList.add('visible');
+    if (el.classList.contains('highlight-box')) el.classList.add('visible');
+    if (el.classList.contains('accuracy-card') && el.classList.contains('primary')) el.classList.add('visible-card');
+    if (el.classList.contains('split-bar-fill')) setTimeout(() => el.classList.add('animated'), 200);
+    io.unobserve(el);
+  });
+}, { threshold: 0.05, rootMargin: "0px 0px -50px 0px" });
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.querySelectorAll('.section-header').forEach(el => io.observe(el));
+  document.querySelectorAll('.section').forEach(el => { el.classList.add('reveal'); io.observe(el); });
+  // chart-containers do NOT get reveal-scale (SVGs need to always be visible)
+  document.querySelectorAll('.split-card').forEach(el => { el.classList.add('reveal'); io.observe(el); });
+  document.querySelectorAll('.arch-diagram').forEach(el => { el.classList.add('reveal'); io.observe(el); });
+  document.querySelectorAll('.pipeline-step').forEach((el, i) => {
+    el.classList.add('reveal'); el.style.transitionDelay = (i * 0.12) + 's'; io.observe(el);
+  });
+  document.querySelectorAll('.cnn-layer').forEach((el, i) => {
+    el.classList.add('reveal'); el.style.transitionDelay = (i * 0.07) + 's'; io.observe(el);
+  });
+  document.querySelectorAll('.accuracy-card').forEach(el => { el.classList.add('reveal-scale'); io.observe(el); });
+  document.querySelectorAll('.gradcam-panel').forEach((el, i) => {
+    el.classList.add(i === 0 ? 'reveal-left' : 'reveal'); io.observe(el);
+  });
+  document.querySelectorAll('.highlight-box').forEach(el => io.observe(el));
+  document.querySelectorAll('.code-block').forEach(el => io.observe(el));
+  document.querySelectorAll('.split-bar-fill').forEach(el => io.observe(el));
+  document.querySelectorAll('.author-strip').forEach(el => io.observe(el));
+
+  /* Table row hover slide */
+  document.querySelectorAll('.comparison-table tbody tr').forEach(row => {
+    row.style.transition = 'background 0.2s, transform 0.2s';
+    row.addEventListener('mouseenter', () => row.style.transform = 'translateX(6px)');
+    row.addEventListener('mouseleave', () => row.style.transform = '');
+  });
+
+  /* Side nav dots */
+  const sections = document.querySelectorAll('.section');
+  const nav = document.createElement('div');
+  nav.style.cssText = 'position:fixed;right:1.2rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:9990;';
+  sections.forEach((sec, i) => {
+    const dot = document.createElement('div');
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:rgba(124,58,237,0.2);cursor:pointer;transition:background 0.3s,transform 0.3s;border:1px solid rgba(124,58,237,0.3);';
+    dot.title = 'Section ' + (i + 1);
+    dot.addEventListener('click', () => sec.scrollIntoView({ behavior: 'smooth' }));
+    nav.appendChild(dot);
+  });
+  document.body.appendChild(nav);
+
+  const dots = nav.querySelectorAll('div');
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      const i = Array.from(sections).indexOf(e.target);
+      if (i < 0) return;
+      dots[i].style.background = e.isIntersecting ? 'var(--accent)' : 'rgba(124,58,237,0.2)';
+      dots[i].style.transform  = e.isIntersecting ? 'scale(1.4)' : 'scale(1)';
+    });
+  }, { threshold: 0.4 }).observe && sections.forEach(s =>
+    new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        const i = Array.from(sections).indexOf(e.target);
+        if (i < 0) return;
+        dots[i].style.background = e.isIntersecting ? 'var(--accent)' : 'rgba(124,58,237,0.2)';
+        dots[i].style.transform  = e.isIntersecting ? 'scale(1.4)' : 'scale(1)';
+      });
+    }, { threshold: 0.4 }).observe(s)
+  );
+});
+
+  // GLOBAL SAFETY NET — force reveal all hidden elements after 2s
+  setTimeout(() => {
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach(el => {
+      el.classList.add('visible');
+    });
+    document.querySelectorAll('.stagger-children').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('.section-header').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('.code-block').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('.highlight-box').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('.split-bar-fill').forEach(el => el.classList.add('animated'));
+    document.querySelectorAll('.accuracy-card.primary').forEach(el => el.classList.add('visible-card'));
+  }, 2000);
+</script>
+</body>
+</html>
